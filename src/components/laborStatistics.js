@@ -6,70 +6,78 @@ const { Toolbar, Data: { Selectors } } = require('react-data-grid-addons');
 
 class Grid extends Component {
   constructor(props, context) {
-    console.log('props', props);
-    console.log('context', context);
     super(props, context);
 
     this._columns = [
       {
-        key: 'area',
-        name: 'Area',
+        key: 'survey_name',
+        name: 'Survey Name',
         filterable: true,
-        resizable: true
-      },
-      {
-        key: 'area_type',
-        name: 'Area Type',
-        filterable: true,
-        resizable: true
-      },
-      {
-        key: 'measure_type',
-        name: 'Measure Type',
-        filterable: true,
-        resizable: true
-      },
-      {
-        key: 'period',
-        name: 'Period',
-        filterable: true,
-        resizable: true
-      },
-      {
-        key: 'seasonality_enum',
-        name: 'Seasonality',
-        filterable: true,
-        resizable: true
-      },
-      {
-        key: 'series_id',
-        name: 'Series ID',
-        filterable: true,
-        resizable: true
+        resizable: true,
+        index: 0
       },
       {
         key: 'series_title',
         name: 'Series Title',
         filterable: true,
-        resizable: true
+        resizable: true,
+        index: 1
       },
       {
-        key: 'survey_name',
-        name: 'Survey Name',
+        key: 'series_id',
+        name: 'Series ID',
         filterable: true,
-        resizable: true
+        resizable: true,
+        index: 2
       },
       {
-        key: 'value',
-        name: 'Value',
+        key: 'period',
+        name: 'Period',
         filterable: true,
-        resizable: true
+        resizable: true,
+        index: 3
       },
       {
         key: 'label',
         name: 'Label',
         filterable: true,
-        resizable: true
+        resizable: true,
+        index: 4
+      },
+      {
+        key: 'seasonality_enum',
+        name: 'Seasonality',
+        filterable: true,
+        resizable: true,
+        index: 5
+      },
+      {
+        key: 'area',
+        name: 'Area',
+        filterable: true,
+        resizable: true,
+        index: 6
+      },
+      {
+        key: 'area_type',
+        name: 'Area Type',
+        filterable: true,
+        resizable: true,
+        index: 7
+      },
+      {
+        key: 'measure_type',
+        name: 'Measure Type',
+        filterable: true,
+        resizable: true,
+        index: 8
+      },
+      {
+        key: 'value',
+        name: 'Value',
+        filterable: true,
+        resizable: true,
+        index: 9
       }
     ];
 
@@ -88,7 +96,7 @@ class Grid extends Component {
         console.log('lastItem', lastItem);
         if ( lastItem.hasMoreResults ) {
           console.log('HELLO I HAVE MORE');
-          
+
         }
         this.setState({rows: this._rows});
       })
