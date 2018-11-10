@@ -15,7 +15,7 @@ class Grid extends Component {
   }
 
   componentWillMount() {
-    axios.get( 'http://127.0.0.1:4000/unemp' )
+    axios.get( `http://${ window.location.hostname }:4000/unemp` )
       .then( response => {
         console.log('response', response);
       })
@@ -64,7 +64,11 @@ class Grid extends Component {
           onAddFilter={this.handleFilterChange}
           onClearFilters={this.onClearFilters} />);
     } else {
-      return 'Hi there';
+      return (
+        <div>
+          Hi there, still working on it!
+        </div>
+      );
     }
   }
 }

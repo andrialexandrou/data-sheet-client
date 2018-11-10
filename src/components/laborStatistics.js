@@ -88,20 +88,17 @@ class Grid extends Component {
   }
 
   componentWillMount() {
-    axios.get( 'http://127.0.0.1:4000/laus' )
+    axios.get( `http://${ window.location.hostname }:4000/laus` )
       .then( response => {
         this._rows = response.data;
-        console.log('response.data', response);
         const lastItem = response.data[response.data.length - 1];
-        console.log('lastItem', lastItem);
         if ( lastItem.hasMoreResults ) {
-          console.log('HELLO I HAVE MORE');
 
         }
         this.setState({rows: this._rows});
       })
       .catch( err => {
-        console.log('dunno, maybe network down', err);
+        console.log('It looks like something in the backend is down. Try restarting the server or the database server.\n', err);
       })
   }
 
@@ -114,7 +111,6 @@ class Grid extends Component {
   };
 
   rowGetter = (rowIdx) => {
-    // return this._rows[ i ];
     let rows = this.getRows();
     return rows[rowIdx];
   };
@@ -126,7 +122,7 @@ class Grid extends Component {
     } else {
       delete newFilters[filter.column.key];
     }
-    // console.log('newFilters', newFilters);
+
     this.setState({ filters: newFilters });
   };
 
