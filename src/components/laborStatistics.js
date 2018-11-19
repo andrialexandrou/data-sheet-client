@@ -1,8 +1,20 @@
 import React, { Component } from 'react';
 import ReactDataGrid from 'react-data-grid';
 import axios from 'axios';
+import _ from 'lodash';
 
 const { Toolbar, Data: { Selectors } } = require('react-data-grid-addons');
+
+function buildQueryString( filters ) {
+  let query = '?';
+  _.forEach(filters, filter => {
+    var filterLabel = filter.column.key;
+    var filterValue = filter.filterTerm;
+    const thisQuery = `${ filterLabel }=${ filterValue }&`;
+    query += thisQuery;
+  })
+  return query;
+}
 
 class Grid extends Component {
   constructor(props, context) {
@@ -12,14 +24,14 @@ class Grid extends Component {
       {
         key: 'survey_name',
         name: 'Survey Name',
-        filterable: true,
+        filterable: false,
         resizable: true,
         index: 0
       },
       {
         key: 'series_title',
         name: 'Series Title',
-        filterable: true,
+        filterable: false,
         resizable: true,
         index: 1
       },
@@ -87,19 +99,41 @@ class Grid extends Component {
     };
   }
 
-  componentWillMount() {
-    axios.get( `http://${ window.location.hostname }:4000/laus` )
+  getFromServer( query, isForDownload ) {
+    let path = `http://${ window.location.hostname }:4000/laus`;
+    if ( isForDownload ) {
+    }
+    if ( query ) {
+      path += query;
+    }
+    console.log('path', path);
+    axios.get( path )
       .then( response => {
-        this._rows = response.data;
-        const lastItem = response.data[response.data.length - 1];
-        if ( lastItem.hasMoreResults ) {
+        console.log('response', response);
+        if ( isForDownload ) {
+          // do nthing
+          // document.getElementById('howdy').src
+        } else {
+          this._rows = response.data;
+          const lastItem = response.data[response.data.length - 1];
+          if ( lastItem.hasMoreResults ) {
 
+          }
+          this.setState({rows: this._rows});
         }
-        this.setState({rows: this._rows});
       })
       .catch( err => {
-        console.log('It looks like something in the backend is down. Try restarting the server or the database server.\n', err);
+        console.log('Resource not available.\n', err);
       })
+  }
+
+  componentWillMount() {
+    this.getFromServer();
+  }
+
+  requestFromAPI = ( isForDownload ) => {
+    const queryString = buildQueryString( this.state.filters );
+    this.getFromServer( queryString, isForDownload );
   }
 
   getSize = () => {
@@ -123,26 +157,41 @@ class Grid extends Component {
       delete newFilters[filter.column.key];
     }
 
-    this.setState({ filters: newFilters });
+    this.setState({ filters: newFilters }, this.requestFromAPI);
   };
 
   onClearFilters = () => {
     // all filters removed
-    this.setState({filters: {} });
+    this.setState({filters: {} }, this.requestFromAPI);
+  };
+
+  download = () => {
+    console.log('TRYING TO DOWNLOAD');
+    this.requestFromAPI( true );
   };
 
   render() {
     if ( this._rows ) {
       return  (
-        <ReactDataGrid
-          columns={this._columns}
-          rowGetter={this.rowGetter}
-          rowsCount={this.getSize()}
-          minHeight={600}
-          minColumnWidth={120}
-          toolbar={<Toolbar enableFilter={ true } />}
-          onAddFilter={this.handleFilterChange}
-          onClearFilters={this.onClearFilters} />);
+        <div>
+
+          <button>
+            <a href="localhost:4000/laus/download?seasonality_enum=S&area=California&value=9.&" download>
+              Download current view
+            </a>
+          </button>
+
+          <ReactDataGrid
+            columns={this._columns}
+            rowGetter={this.rowGetter}
+            rowsCount={this.getSize()}
+            minHeight={600}
+            minColumnWidth={120}
+            toolbar={<Toolbar enableFilter={ true } />}
+            onAddFilter={this.handleFilterChange}
+            onClearFilters={this.onClearFilters} />
+          </div>
+      );
     } else {
       return null;
     }

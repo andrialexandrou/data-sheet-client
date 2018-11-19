@@ -38,3 +38,16 @@
 .react-grid-Canvas {
   height: 100%;
 } */
+
+
+.react-grid-Row {
+  height: 28px;
+}
+
+.react-grid-Row--even {
+  background-color: red;
+}
+
+.reach-grid-Row--odd {
+  background-color: blue;
+}
