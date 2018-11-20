@@ -102,21 +102,21 @@ class Grid extends Component {
   getFromServer( query, isForDownload ) {
     let path = `http://${ window.location.hostname }:4000/laus`;
     if ( isForDownload ) {
+      return;
     }
     if ( query ) {
       path += query;
     }
-    console.log('path', path);
+
     axios.get( path )
       .then( response => {
-        console.log('response', response);
         if ( isForDownload ) {
           // do nthing
           // document.getElementById('howdy').src
         } else {
           this._rows = response.data;
           const lastItem = response.data[response.data.length - 1];
-          if ( lastItem.hasMoreResults ) {
+          if ( lastItem && lastItem.hasMoreResults ) {
 
           }
           this.setState({rows: this._rows});
@@ -149,7 +149,7 @@ class Grid extends Component {
     return rows[rowIdx];
   };
 
-  handleFilterChange = (filter) => {
+  handleFilterChange = _.debounce( (filter) => {
     let newFilters = Object.assign({}, this.state.filters);
     if (filter.filterTerm) {
       newFilters[filter.column.key] = filter;
@@ -158,7 +158,7 @@ class Grid extends Component {
     }
 
     this.setState({ filters: newFilters }, this.requestFromAPI);
-  };
+  }, 500 );
 
   onClearFilters = () => {
     // all filters removed
@@ -166,20 +166,35 @@ class Grid extends Component {
   };
 
   download = () => {
-    console.log('TRYING TO DOWNLOAD');
     this.requestFromAPI( true );
   };
+
+  pleaseHold = () => {
+    alert('Still in development! Come back in a few days?')
+  };
+
+  Test = () => {
+    if ( _.isEmpty( this.state.filters ) ) {
+      return (
+        <button disabled>
+          Please select some stuff and then you can download
+        </button>
+      );
+    } else {
+      return (
+        <button onClick={ this.pleaseHold }>
+          Download current view.
+        </button>
+      );
+    }
+  }
 
   render() {
     if ( this._rows ) {
       return  (
         <div>
+          <this.Test />
 
-          <button>
-            <a href="localhost:4000/laus/download?seasonality_enum=S&area=California&value=9.&" download>
-              Download current view
-            </a>
-          </button>
 
           <ReactDataGrid
             columns={this._columns}
