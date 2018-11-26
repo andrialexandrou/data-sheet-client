@@ -3,7 +3,18 @@ import ReactDataGrid from 'react-data-grid';
 import axios from 'axios';
 import _ from 'lodash';
 
-const { Toolbar, Data: { Selectors } } = require('react-data-grid-addons');
+const {
+  Toolbar,
+  Data: { Selectors },
+  Filters
+} = require('react-data-grid-addons');
+
+const {
+  // NumericFilter,
+  // AutoCompleteFilter,
+  MultiSelectFilter,
+  // SingleSelectFilter
+} = Filters;
 
 function buildQueryString( filters ) {
   let query = '?';
@@ -32,6 +43,7 @@ class Grid extends Component {
         name: 'Survey Name',
         filterable: false,
         resizable: true,
+        width: 160,
         index: 0
       },
       {
@@ -39,6 +51,7 @@ class Grid extends Component {
         name: 'Series Title',
         filterable: false,
         resizable: true,
+        width: 160,
         index: 1
       },
       {
@@ -46,6 +59,7 @@ class Grid extends Component {
         name: 'Series ID',
         filterable: true,
         resizable: true,
+        width: 200,
         index: 2
       },
       {
@@ -53,6 +67,7 @@ class Grid extends Component {
         name: 'Period',
         filterable: true,
         resizable: true,
+        width: 150,
         index: 3
       },
       {
@@ -60,13 +75,16 @@ class Grid extends Component {
         name: 'Label',
         filterable: true,
         resizable: true,
+        width: 150,
         index: 4
       },
       {
         key: 'seasonality_enum',
         name: 'Seasonality',
         filterable: true,
+        filterRenderer: MultiSelectFilter,
         resizable: true,
+        width: 100,
         index: 5
       },
       {
@@ -74,20 +92,25 @@ class Grid extends Component {
         name: 'Area',
         filterable: true,
         resizable: true,
+        width: 350,
         index: 6
       },
       {
         key: 'area_type',
         name: 'Area Type',
         filterable: true,
+        filterRenderer: MultiSelectFilter,
         resizable: true,
+        width: 160,
         index: 7
       },
       {
         key: 'measure_type',
         name: 'Measure Type',
         filterable: true,
+        filterRenderer: MultiSelectFilter,
         resizable: true,
+        width: 160,
         index: 8
       },
       {
@@ -95,6 +118,7 @@ class Grid extends Component {
         name: 'Value',
         filterable: true,
         resizable: true,
+        width: 200,
         index: 9
       }
     ];
@@ -160,12 +184,58 @@ class Grid extends Component {
     return rows[rowIdx];
   };
 
+  getValidFilterValues = (rows, columnId) => {
+    const stuff = [];
+    switch( columnId ) {
+      case 'seasonality_enum':
+        stuff.push('S');
+        stuff.push('U');
+        break;
+      case 'area_type':
+        stuff.push('Statewide');
+        stuff.push('Metropolitan areas');
+        stuff.push('Metropolitan divisions');
+        stuff.push('Micropolitan areas');
+        stuff.push('Combined areas');
+        stuff.push('Counties and equivalents');
+        stuff.push('Cities and towns above 25,000 population');
+        stuff.push('Cities and towns below 25,000 population in New England');
+        stuff.push('Parts of cities that cross county boundaries');
+        stuff.push('Multi-entity small labor market areas');
+        stuff.push('Intrastate parts of interstate areas');
+        stuff.push('Balance of state areas');
+        stuff.push('Census regions');
+        stuff.push('Census divisions');
+        break;
+      case 'measure_type':
+        stuff.push('Unemployment Rate');
+        stuff.push('Unemployment');
+        stuff.push('Employment');
+        stuff.push('Labor Force');
+        break;
+      default:
+        break;
+    }
+    return stuff;
+  };
+
   handleFilterChange = _.debounce( (filter) => {
     let newFilters = Object.assign({}, this.state.filters);
-    if (filter.filterTerm) {
-      newFilters[filter.column.key] = filter;
-    } else {
+
+    if (
+      !filter.filterTerm ||
+      ( Array.isArray(filter.filterTerm) && filter.filterTerm.length === 0 )
+    ) {
       delete newFilters[filter.column.key];
+    } else {
+      const columnKey = filter.column.key;
+      const value = Array.isArray( filter.filterTerm ) ?
+        filter.filterTerm[ 0 ].value :
+        filter.filterTerm;
+      newFilters[ columnKey ] = {
+        column: filter.column,
+        filterTerm: value
+      };
     }
 
     this.setState({ filters: newFilters }, this.requestFromAPI);
@@ -214,6 +284,7 @@ class Grid extends Component {
             minHeight={600}
             minColumnWidth={120}
             toolbar={<Toolbar enableFilter={ true } />}
+            getValidFilterValues={columnKey => this.getValidFilterValues(null, columnKey)}
             onAddFilter={this.handleFilterChange}
             onClearFilters={this.onClearFilters} />
           </div>
