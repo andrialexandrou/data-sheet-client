@@ -16,6 +16,12 @@ function buildQueryString( filters ) {
   return query;
 }
 
+function createFilename() {
+  const now = new Date();
+  const filename = `LAUS_${ 1900 + now.getYear() }-${ now.getMonth() }-${ now.getDate() }.csv`;
+  return filename;
+}
+
 class Grid extends Component {
   constructor(props, context) {
     super(props, context);
@@ -102,7 +108,7 @@ class Grid extends Component {
   getFromServer( query, isForDownload ) {
     let path = `http://${ window.location.hostname }:4000/laus`;
     if ( isForDownload ) {
-      return;
+      path += '/download'
     }
     if ( query ) {
       path += query;
@@ -111,8 +117,13 @@ class Grid extends Component {
     axios.get( path )
       .then( response => {
         if ( isForDownload ) {
-          // do nthing
-          // document.getElementById('howdy').src
+          var headers = response.headers;
+          var blob = new Blob([response.data],{type:headers['content-type']});
+          var link = document.createElement('a');
+          link.style.display = 'none';
+          link.href = window.URL.createObjectURL(blob);
+          link.download = createFilename();
+          link.click();
         } else {
           this._rows = response.data;
           const lastItem = response.data[response.data.length - 1];
@@ -182,7 +193,7 @@ class Grid extends Component {
       );
     } else {
       return (
-        <button onClick={ this.pleaseHold }>
+        <button onClick={ this.download }>
           Download current view.
         </button>
       );
