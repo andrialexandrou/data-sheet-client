@@ -12,8 +12,8 @@ const {
 const {
   // NumericFilter,
   // AutoCompleteFilter,
-  MultiSelectFilter,
-  // SingleSelectFilter
+  // MultiSelectFilter,
+  SingleSelectFilter
 } = Filters;
 
 function buildQueryString( filters ) {
@@ -82,7 +82,7 @@ class Grid extends Component {
         key: 'seasonality_enum',
         name: 'Seasonality',
         filterable: true,
-        filterRenderer: MultiSelectFilter,
+        filterRenderer: SingleSelectFilter,
         resizable: true,
         width: 100,
         index: 5
@@ -99,7 +99,7 @@ class Grid extends Component {
         key: 'area_type',
         name: 'Area Type',
         filterable: true,
-        filterRenderer: MultiSelectFilter,
+        filterRenderer: SingleSelectFilter,
         resizable: true,
         width: 160,
         index: 7
@@ -108,7 +108,7 @@ class Grid extends Component {
         key: 'measure_type',
         name: 'Measure Type',
         filterable: true,
-        filterRenderer: MultiSelectFilter,
+        filterRenderer: SingleSelectFilter,
         resizable: true,
         width: 160,
         index: 8
@@ -222,16 +222,11 @@ class Grid extends Component {
   handleFilterChange = _.debounce( (filter) => {
     let newFilters = Object.assign({}, this.state.filters);
 
-    if (
-      !filter.filterTerm ||
-      ( Array.isArray(filter.filterTerm) && filter.filterTerm.length === 0 )
-    ) {
+    if ( !filter.filterTerm ) {
       delete newFilters[filter.column.key];
     } else {
       const columnKey = filter.column.key;
-      const value = Array.isArray( filter.filterTerm ) ?
-        filter.filterTerm[ 0 ].value :
-        filter.filterTerm;
+      const value = filter.filterTerm.value || filter.filterTerm;
       newFilters[ columnKey ] = {
         column: filter.column,
         filterTerm: value
