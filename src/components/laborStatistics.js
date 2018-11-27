@@ -278,6 +278,13 @@ class Grid extends Component {
               null
           }
 
+          <div style={{
+            color: 'grey',
+            fontStyle: 'italic',
+            marginTop: '20px'
+          }}>
+            Data below is only the first 100 rows. If you choose to download your current filter, it will provide the full dataset as stored in the database.
+          </div>
           <ReactDataGrid
             columns={this._columns}
             rowGetter={this.rowGetter}
