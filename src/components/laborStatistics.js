@@ -148,6 +148,7 @@ class Grid extends Component {
           link.href = window.URL.createObjectURL(blob);
           link.download = createFilename();
           link.click();
+          this.setState({isWaitingForDownload: false})
         } else {
           this._rows = response.data;
           const lastItem = response.data[response.data.length - 1];
@@ -242,6 +243,7 @@ class Grid extends Component {
   };
 
   download = () => {
+    this.setState({isWaitingForDownload:true});
     this.requestFromAPI( true );
   };
 
@@ -249,11 +251,11 @@ class Grid extends Component {
     alert('Still in development! Come back in a few days?')
   };
 
-  Test = () => {
+  DownloadButton = () => {
     if ( _.isEmpty( this.state.filters ) ) {
       return (
         <button disabled>
-          Please select some stuff and then you can download
+          Select some stuff below and then you can download.
         </button>
       );
     } else {
@@ -269,8 +271,12 @@ class Grid extends Component {
     if ( this._rows ) {
       return  (
         <div>
-          <this.Test />
-
+          <this.DownloadButton />
+          {
+            this.state.isWaitingForDownload ?
+              <span style={{color: 'green'}}>&nbsp;Waiting for download...</span> :
+              null
+          }
 
           <ReactDataGrid
             columns={this._columns}
