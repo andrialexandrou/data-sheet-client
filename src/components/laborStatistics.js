@@ -1,26 +1,20 @@
 import React, { Component } from 'react';
 import ReactDataGrid from 'react-data-grid';
+import { WithContext as ReactTags } from 'react-tag-input';
+
 import axios from 'axios';
 import _ from 'lodash';
 
 const {
   Toolbar,
-  Data: { Selectors },
-  Filters
+  Data: { Selectors }
 } = require('react-data-grid-addons');
-
-const {
-  // NumericFilter,
-  // AutoCompleteFilter,
-  // MultiSelectFilter,
-  SingleSelectFilter
-} = Filters;
 
 function buildQueryString( filters ) {
   let query = '?';
-  _.forEach(filters, filter => {
-    var filterLabel = filter.column.key;
-    var filterValue = filter.filterTerm;
+  _.forEach(filters, (filter, key) => {
+    var filterLabel = key;
+    var filterValue = filter.join(',');
     const thisQuery = `${ filterLabel }=${ filterValue }&`;
     query += thisQuery;
   })
@@ -41,91 +35,83 @@ class Grid extends Component {
       {
         key: 'survey_name',
         name: 'Survey Name',
-        filterable: false,
-        resizable: true,
-        width: 160,
-        index: 0
+        width: 160
       },
       {
         key: 'series_title',
         name: 'Series Title',
-        filterable: false,
-        resizable: true,
-        width: 160,
-        index: 1
+        width: 160
       },
       {
         key: 'series_id',
         name: 'Series ID',
-        filterable: true,
-        resizable: true,
-        width: 200,
-        index: 2
+        width: 200
       },
       {
         key: 'period',
         name: 'Period',
-        filterable: true,
-        resizable: true,
-        width: 150,
-        index: 3
+        width: 150
       },
       {
         key: 'label',
         name: 'Label',
-        filterable: true,
-        resizable: true,
-        width: 150,
-        index: 4
+        width: 150
       },
       {
         key: 'seasonality_enum',
         name: 'Seasonality',
-        filterable: true,
-        filterRenderer: SingleSelectFilter,
-        resizable: true,
-        width: 100,
-        index: 5
+        width: 100
       },
       {
         key: 'area',
         name: 'Area',
-        filterable: true,
-        resizable: true,
-        width: 350,
-        index: 6
+        width: 350
       },
       {
         key: 'area_type',
         name: 'Area Type',
-        filterable: true,
-        filterRenderer: SingleSelectFilter,
-        resizable: true,
-        width: 160,
-        index: 7
+        width: 160
       },
       {
         key: 'measure_type',
         name: 'Measure Type',
-        filterable: true,
-        filterRenderer: SingleSelectFilter,
-        resizable: true,
-        width: 160,
-        index: 8
+        width: 160
       },
       {
         key: 'value',
         name: 'Value',
-        filterable: true,
-        resizable: true,
-        width: 200,
-        index: 9
+        width: 200
       }
+    ];
+
+    this.seasonalityEnums = [ 'S', 'U' ];
+    this.areaTypes = [
+      'Statewide',
+      'Metropolitan areas',
+      'Metropolitan divisions',
+      'Micropolitan areas',
+      'Combined areas',
+      'Counties and equivalents',
+      'Cities and towns above 25,000 population',
+      'Cities and towns below 25,000 population in New England',
+      'Parts of cities that cross county boundaries',
+      'Multi-entity small labor market areas',
+      'Intrastate parts of interstate areas',
+      'Balance of state areas',
+      'Census regions',
+      'Census divisions'
+    ];
+    this.measureTypes = [
+      'Unemployment Rate',
+      'Unemployment',
+      'Employment',
+      'Labor Force'
     ];
 
     this.state = {
       rows: [],
-      filters: {}
+      filters: {},
+      tags: {}
     };
   }
 
@@ -185,41 +171,6 @@ class Grid extends Component {
     return rows[rowIdx];
   };
 
-  getValidFilterValues = (rows, columnId) => {
-    const stuff = [];
-    switch( columnId ) {
-      case 'seasonality_enum':
-        stuff.push('S');
-        stuff.push('U');
-        break;
-      case 'area_type':
-        stuff.push('Statewide');
-        stuff.push('Metropolitan areas');
-        stuff.push('Metropolitan divisions');
-        stuff.push('Micropolitan areas');
-        stuff.push('Combined areas');
-        stuff.push('Counties and equivalents');
-        stuff.push('Cities and towns above 25,000 population');
-        stuff.push('Cities and towns below 25,000 population in New England');
-        stuff.push('Parts of cities that cross county boundaries');
-        stuff.push('Multi-entity small labor market areas');
-        stuff.push('Intrastate parts of interstate areas');
-        stuff.push('Balance of state areas');
-        stuff.push('Census regions');
-        stuff.push('Census divisions');
-        break;
-      case 'measure_type':
-        stuff.push('Unemployment Rate');
-        stuff.push('Unemployment');
-        stuff.push('Employment');
-        stuff.push('Labor Force');
-        break;
-      default:
-        break;
-    }
-    return stuff;
-  };
-
   handleFilterChange = _.debounce( (filter) => {
     let newFilters = Object.assign({}, this.state.filters);
 
@@ -235,7 +186,7 @@ class Grid extends Component {
     }
 
     this.setState({ filters: newFilters }, this.requestFromAPI);
-  }, 500 );
+  }, 1000 );
 
   onClearFilters = () => {
     // all filters removed
@@ -249,6 +200,76 @@ class Grid extends Component {
 
   pleaseHold = () => {
     alert('Still in development! Come back in a few days?')
+  };
+
+  findKey = ( value ) => {
+    let key = "";
+    const isMeasureType = this.measureTypes.find( type => type === value );
+    const isSeasonalityType = this.seasonalityEnums.find( type => type === value );
+    const isAreaType = this.areaTypes.find( type => type === value );
+    if ( isMeasureType ) {
+      key = "measure_type";
+    } else if ( isSeasonalityType ) {
+      key = "seasonality_enum";
+    } else if ( isAreaType ) {
+      key = "area_type"
+    }
+    return key;
+  }
+
+  handleChange = event => {
+    const { filters } = this.state;
+    const target = event.target;
+    const value = target.type === 'checkbox' ? target.checked : target.value;
+    const name = target.name;
+
+    if ( target.type === "checkbox" ) {
+      const key = this.findKey( name );
+      if ( value ) {
+        // being checked
+        filters[ key ] = _.uniq( ( filters[ key ] || [] ).concat( name ) );
+      } else {
+        // being unchecked
+        filters[ key ] = _.uniq( filters[ key ].filter( index => index !== name ) );
+        if ( filters[ key ].length === 0 ) {
+          // to disable the download button.
+          delete filters[ key ];
+        }
+      }
+    }
+
+    this.setState({
+      filters: filters
+    });
+  }
+
+  handleSubmit = event => {
+    event.preventDefault();
+    this.requestFromAPI( false );
+  }
+
+  handleTagDelete = (i, key) => {
+    const { filters, tags } = this.state;
+    filters[ key ] = filters[key].filter((tag, index) => index !== i);
+    if ( filters[ key ].length === 0 ) {
+      // to disable the download button.
+      delete filters[ key ];
+    }
+    tags[ key ] = tags[key].filter((tag, index) => index !== i);
+    this.setState({
+      filters: filters,
+      tags: tags
+    });
+  };
+
+  handleTagAdd = (tag, category) => {
+    const { filters, tags } = this.state;
+    filters[ category ] = ( filters[ category ] || [] ).concat( tag.text );
+    tags[ category ] = ( tags[ category ] || [] ).concat( tag );
+    this.setState({
+      filters: filters,
+      tags: tags
+    });
   };
 
   DownloadButton = () => {
@@ -267,6 +288,106 @@ class Grid extends Component {
     }
   }
 
+  makeCheckboxes = names => {
+    const rows = [];
+    let count = 0;
+    names.forEach( valName => {
+      rows.push(<div key={ count }>
+          <label>
+          <input
+            name={ valName }
+            type="checkbox"
+            onChange={this.handleChange} />
+            &nbsp;{ valName }
+        </label>
+      </div>);
+      count++
+    } );
+
+    return <div>{ rows }</div>
+  }
+
+  FilterForm = () => {
+    const KeyCodes = {
+      comma: 188,
+      enter: 13,
+    };
+
+    const delimiters = [KeyCodes.comma, KeyCodes.enter];
+
+    return (
+      <div style={{
+        zIndex: '100',
+        position: 'absolute',
+        top: '5px',
+        left: 'calc(50% - 200px)',
+        border: '2px dotted grey',
+        width: '400px',
+        backgroundColor: 'white',
+        padding: '20px'
+      }}>
+        <form onSubmit={this.handleSubmit}>
+          <section>
+            <label>
+              <b>Area</b>
+              <div>
+                <ReactTags
+                  tags={this.state.tags.area}
+                  handleDelete={e => this.handleTagDelete(e, 'area')}
+                  handleAddition={e => this.handleTagAdd(e, 'area')}
+                  delimiters={delimiters} />
+              </div>
+            </label>
+          </section>
+          <section>
+            <label>
+              <b>Period</b>
+              <div>
+                <ReactTags
+                  tags={this.state.tags.period}
+                  handleDelete={e => this.handleTagDelete(e, 'period')}
+                  handleAddition={e => this.handleTagAdd(e, 'period')}
+                  delimiters={delimiters} />
+              </div>
+            </label>
+          </section>
+          <section>
+            <label>
+              <b>Label</b>
+              <div>
+                <ReactTags
+                  tags={this.state.tags.label}
+                  handleDelete={e => this.handleTagDelete(e, 'label')}
+                  handleAddition={e => this.handleTagAdd(e, 'label')}
+                  delimiters={delimiters} />
+              </div>
+            </label>
+          </section>
+          <section>
+            <b>Area Types</b>
+            { this.makeCheckboxes( this.areaTypes ) }
+          </section>
+          <section>
+            <b>Measure Types</b>
+            { this.makeCheckboxes( this.measureTypes ) }
+          </section>
+          <section>
+            <b>Seasonality</b>
+            { this.makeCheckboxes( this.seasonalityEnums ) }
+          </section>
+          <input
+            type="submit"
+            disabled={ _.isEmpty( this.state.filters ) || this.state.isWaitingForDownload }
+            value={
+              this.state.isWaitingForDownload ?
+              'Please wait while we get your current download request back.' :
+              'Check database for values'}
+              />
+        </form>
+      </div>
+    );
+  }
+
   render() {
     if ( this._rows ) {
       return  (
@@ -277,25 +398,32 @@ class Grid extends Component {
               <span style={{color: 'green'}}>&nbsp;Waiting for download...</span> :
               null
           }
+          <this.FilterForm />
 
           <div style={{
-            color: 'grey',
-            fontStyle: 'italic',
-            marginTop: '20px'
-          }}>
-            Data below is only the first 100 rows. If you choose to download your current filter, it will provide the full dataset as stored in the database.
+            position: 'absolute',
+            top: '200px',
+            left: '0',
+            width: '100%'
+            }}>
+            <div style={{
+              color: 'grey',
+              fontStyle: 'italic',
+              marginTop: '20px'
+            }}>
+              Data below is only the first 100 rows. If you choose to download your current filter, it will provide the full dataset as stored in the database.
+            </div>
+            <ReactDataGrid
+              columns={this._columns}
+              rowGetter={this.rowGetter}
+              rowsCount={this.getSize()}
+              minHeight={600}
+              minColumnWidth={120}
+              toolbar={<Toolbar />}
+              />
+
           </div>
-          <ReactDataGrid
-            columns={this._columns}
-            rowGetter={this.rowGetter}
-            rowsCount={this.getSize()}
-            minHeight={600}
-            minColumnWidth={120}
-            toolbar={<Toolbar enableFilter={ true } />}
-            getValidFilterValues={columnKey => this.getValidFilterValues(null, columnKey)}
-            onAddFilter={this.handleFilterChange}
-            onClearFilters={this.onClearFilters} />
-          </div>
+        </div>
       );
     } else {
       return null;
