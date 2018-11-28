@@ -14,7 +14,7 @@ function buildQueryString( filters ) {
   let query = '?';
   _.forEach(filters, (filter, key) => {
     var filterLabel = key;
-    var filterValue = filter.join(',');
+    var filterValue = filter.join('|');
     const thisQuery = `${ filterLabel }=${ filterValue }&`;
     query += thisQuery;
   })
@@ -171,7 +171,7 @@ class Grid extends Component {
     return rows[rowIdx];
   };
 
-  handleFilterChange = _.debounce( (filter) => {
+  handleFilterChange = (filter) => {
     let newFilters = Object.assign({}, this.state.filters);
 
     if ( !filter.filterTerm ) {
@@ -186,7 +186,7 @@ class Grid extends Component {
     }
 
     this.setState({ filters: newFilters }, this.requestFromAPI);
-  }, 1000 );
+  };
 
   onClearFilters = () => {
     // all filters removed
@@ -250,6 +250,9 @@ class Grid extends Component {
 
   handleTagDelete = (i, key) => {
     const { filters, tags } = this.state;
+    if ( !filters[ key ] ) {
+      return;
+    }
     filters[ key ] = filters[key].filter((tag, index) => index !== i);
     if ( filters[ key ].length === 0 ) {
       // to disable the download button.
@@ -309,24 +312,19 @@ class Grid extends Component {
 
   FilterForm = () => {
     const KeyCodes = {
-      comma: 188,
+      comma: 188, // some of the values include commas. therefore, exclude
       enter: 13,
+      tab: 9
     };
 
-    const delimiters = [KeyCodes.comma, KeyCodes.enter];
+    const delimiters = [KeyCodes.tab, KeyCodes.enter];
 
     return (
-      <div style={{
-        zIndex: '100',
-        position: 'absolute',
-        top: '5px',
-        left: 'calc(50% - 200px)',
-        border: '2px dotted grey',
-        width: '400px',
-        backgroundColor: 'white',
-        padding: '20px'
-      }}>
+      <div className="filter-pane">
         <form onSubmit={this.handleSubmit}>
+          <div className="disclaimer">
+            At the moment, text values inserted here must match upper/lowercase and punctuation of the target search field.
+          </div>
           <section>
             <label>
               <b>Area</b>
@@ -398,21 +396,18 @@ class Grid extends Component {
               <span style={{color: 'green'}}>&nbsp;Waiting for download...</span> :
               null
           }
-          <this.FilterForm />
+
+          <div className="filter-trigger">
+            <button>Apply Filters</button>
+            <this.FilterForm />
+          </div>
 
           <div style={{
             position: 'absolute',
-            top: '200px',
             left: '0',
             width: '100%'
             }}>
-            <div style={{
-              color: 'grey',
-              fontStyle: 'italic',
-              marginTop: '20px'
-            }}>
-              Data below is only the first 100 rows. If you choose to download your current filter, it will provide the full dataset as stored in the database.
-            </div>
+
             <ReactDataGrid
               columns={this._columns}
               rowGetter={this.rowGetter}
@@ -421,6 +416,9 @@ class Grid extends Component {
               minColumnWidth={120}
               toolbar={<Toolbar />}
               />
+            <div className="disclaimer">
+              Data below is only the first 100 rows. If you choose to download your current filter, it will provide the full dataset as stored in the database.
+            </div>
 
           </div>
         </div>
