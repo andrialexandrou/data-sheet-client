@@ -86,6 +86,7 @@ class Grid extends Component {
 
     this.seasonalityEnums = [ 'S', 'U' ];
     this.areaTypes = [
+      'National',
       'Statewide',
       'Metropolitan areas',
       'Metropolitan divisions',
