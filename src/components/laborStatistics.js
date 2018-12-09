@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import ReactDataGrid from 'react-data-grid';
 import { WithContext as ReactTags } from 'react-tag-input';
-
 import axios from 'axios';
 import _ from 'lodash';
+
+import GeoSuggest from './geoSuggest';
 
 const {
   Toolbar,
@@ -233,6 +234,7 @@ class Grid extends Component {
 
     if ( target.type === "checkbox" ) {
       const key = this.findKey( name );
+
       if ( value ) {
         // being checked
         filters[ key ] = _.uniq( ( filters[ key ] || [] ).concat( name ) );
@@ -434,6 +436,7 @@ class Grid extends Component {
                 null
             }
 
+            <GeoSuggest dataset="laus" />
             <ReactDataGrid
               columns={this._columns}
               rowGetter={this.rowGetter}
