@@ -110,6 +110,7 @@ class Grid extends Component {
     ];
 
     this.state = {
+      showFilters: false,
       rows: [],
       filters: {},
       tags: {}
@@ -172,23 +173,6 @@ class Grid extends Component {
     return rows[rowIdx];
   };
 
-  handleFilterChange = (filter) => {
-    let newFilters = Object.assign({}, this.state.filters);
-
-    if ( !filter.filterTerm ) {
-      delete newFilters[filter.column.key];
-    } else {
-      const columnKey = filter.column.key;
-      const value = filter.filterTerm.value || filter.filterTerm;
-      newFilters[ columnKey ] = {
-        column: filter.column,
-        filterTerm: value
-      };
-    }
-
-    this.setState({ filters: newFilters }, this.requestFromAPI);
-  };
-
   onClearFilters = () => {
     // all filters removed
     this.setState({filters: {} }, this.requestFromAPI);
@@ -201,6 +185,29 @@ class Grid extends Component {
 
   pleaseHold = () => {
     alert('Still in development! Come back in a few days?')
+  };
+
+  handleClick = e => {
+    // return;
+    const isInside = e.target.offsetParent && e.target.offsetParent.className === 'filter-pane'
+    if ( isInside ) {
+      return;
+    }
+    this.closeFilters();
+  };
+
+  closeFilters = () => {
+    document.removeEventListener('mousedown', this.handleClick, false);
+    this.setState({
+      showFilters: false
+    })
+  };
+
+  openFilters = () => {
+    document.addEventListener('mousedown', this.handleClick, false);
+    this.setState({
+      showFilters: true
+    });
   };
 
   findKey = ( value ) => {
@@ -241,12 +248,7 @@ class Grid extends Component {
 
     this.setState({
       filters: filters
-    });
-  }
-
-  handleSubmit = event => {
-    event.preventDefault();
-    this.requestFromAPI( false );
+    }, this.requestFromAPI);
   }
 
   handleTagDelete = (i, key) => {
@@ -263,7 +265,7 @@ class Grid extends Component {
     this.setState({
       filters: filters,
       tags: tags
-    });
+    }, this.requestFromAPI);
   };
 
   handleTagAdd = (tag, category) => {
@@ -273,7 +275,7 @@ class Grid extends Component {
     this.setState({
       filters: filters,
       tags: tags
-    });
+    }, this.requestFromAPI);
   };
 
   DownloadButton = () => {
@@ -322,7 +324,7 @@ class Grid extends Component {
 
     return (
       <div className="filter-pane">
-        <form onSubmit={this.handleSubmit}>
+        <form>
           <div className="disclaimer">
             At the moment, text values inserted here must match upper/lowercase and punctuation of the target search field.
           </div>
@@ -374,14 +376,6 @@ class Grid extends Component {
             <b>Seasonality</b>
             { this.makeCheckboxes( this.seasonalityEnums ) }
           </section>
-          <input
-            type="submit"
-            disabled={ _.isEmpty( this.state.filters ) || this.state.isWaitingForDownload }
-            value={
-              this.state.isWaitingForDownload ?
-              'Please wait while we get your current download request back.' :
-              'Check database for values'}
-              />
         </form>
       </div>
     );
@@ -399,8 +393,13 @@ class Grid extends Component {
           }
 
           <div className="filter-trigger">
-            <button>Apply Filters</button>
-            <this.FilterForm />
+            <button
+              onClick={this.openFilters}>
+              Apply Filters
+            </button>
+            {
+              this.state.showFilters && <this.FilterForm />
+            }
           </div>
 
           <div style={{
@@ -408,6 +407,32 @@ class Grid extends Component {
             left: '0',
             width: '100%'
             }}>
+            { !_.isEmpty( this.state.filters ) ?
+                <div>
+                  Meets criteria:
+                  <ul>
+                    {
+                      Object.keys( this.state.filters ).map( (filterName, i) => {
+                        const isLastItem = i + 1 === _.size( this.state.filters );
+                        const filter = this.state.filters[ filterName ];
+                        let string = filter.join(' OR ');
+                        if ( !isLastItem ) {
+                          string += ' AND'
+                        }
+                        return (
+                          <li key={ i }>{ string }</li>
+                        )
+                      })
+                    }
+                  </ul>
+                  <button
+                    onClick={this.onClearFilters}>
+                    Clear Filters
+                  </button>
+                </div>
+                :
+                null
+            }
 
             <ReactDataGrid
               columns={this._columns}
@@ -418,7 +443,7 @@ class Grid extends Component {
               toolbar={<Toolbar />}
               />
             <div className="disclaimer">
-              Data below is only the first 100 rows. If you choose to download your current filter, it will provide the full dataset as stored in the database.
+              Data above is only the first 100 rows. If you choose to download your current filter, it will provide the full dataset as stored in the database.
             </div>
 
           </div>
