@@ -85,7 +85,13 @@ class Grid extends Component {
       }
     ];
 
-    this.seasonalityEnums = [ 'S', 'U' ];
+    this.seasonalityEnums = [ {
+      key: 'S',
+      note: '(seasonally adjusted)'
+    }, {
+      key: 'U',
+      note: '(not adjusted)'
+    }];
     this.areaTypes = [
       'National',
       'Statewide',
@@ -213,8 +219,9 @@ class Grid extends Component {
 
   findKey = ( value ) => {
     let key = "";
+
     const isMeasureType = this.measureTypes.find( type => type === value );
-    const isSeasonalityType = this.seasonalityEnums.find( type => type === value );
+    const isSeasonalityType = this.seasonalityEnums.find( type => type.key === value );
     const isAreaType = this.areaTypes.find( type => type === value );
     if ( isMeasureType ) {
       key = "measure_type";
@@ -299,14 +306,24 @@ class Grid extends Component {
   makeCheckboxes = names => {
     const rows = [];
     let count = 0;
-    names.forEach( valName => {
+    names.forEach( value => {
+      let name = '';
+      let supplemental = '';
+
+      if ( typeof value == 'object' ) {
+        name = value.key;
+        supplemental = value.note;
+      } else {
+        name = value;
+      }
+
       rows.push(<div key={ count }>
           <label>
           <input
-            name={ valName }
+            name={ name }
             type="checkbox"
             onChange={this.handleChange} />
-            &nbsp;{ valName }
+            &nbsp;{ name } { supplemental }
         </label>
       </div>);
       count++
