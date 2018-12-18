@@ -261,6 +261,9 @@ class Grid extends Component {
   }
 
   handleTagDelete = (i, key) => {
+    if ( i === 'last' && key === 'area' ) {
+      i = this.state.tags.area.length - 1;
+    }
     const { filters, tags } = this.state;
     if ( !filters[ key ] ) {
       return;
@@ -343,19 +346,57 @@ class Grid extends Component {
 
     return (
       <div className="filter-pane">
+        { !_.isEmpty( this.state.filters ) ?
+            <div>
+              Meets criteria:
+              <ul>
+                {
+                  Object.keys( this.state.filters ).map( (filterName, i) => {
+                    const isLastItem = i + 1 === _.size( this.state.filters );
+                    const filter = this.state.filters[ filterName ];
+                    let string = filter.join(' OR ');
+                    if ( !isLastItem ) {
+                      string += ' AND'
+                    }
+                    return (
+                      <li key={ i }>{ string }</li>
+                    )
+                  })
+                }
+              </ul>
+              <button
+                onClick={this.onClearFilters}>
+                Clear Filters
+              </button>
+
+              <this.DownloadButton />
+              {
+                this.state.isWaitingForDownload ?
+                  <span style={{color: 'green'}}>&nbsp;Waiting for download...</span> :
+                  null
+              }
+            </div>
+            :
+            null
+        }
         <form>
           <div className="disclaimer">
             At the moment, text values inserted here must match upper/lowercase and punctuation of the target search field.
           </div>
           <section>
-            <label>
+            <label
+              className="hide-input">
               <b>Area</b>
               <div>
                 <ReactTags
                   tags={this.state.tags.area}
-                  handleDelete={e => this.handleTagDelete(e, 'area')}
-                  handleAddition={e => this.handleTagAdd(e, 'area')}
+                  handleDelete={() => {}}
+                  handleAddition={() => {}}
                   delimiters={delimiters} />
+                <GeoSuggest
+                  dataset="laus"
+                  add={ this.handleTagAdd }
+                  remove={ this.handleTagDelete }/>
               </div>
             </label>
           </section>
@@ -404,13 +445,6 @@ class Grid extends Component {
     if ( this._rows ) {
       return  (
         <div>
-          <this.DownloadButton />
-          {
-            this.state.isWaitingForDownload ?
-              <span style={{color: 'green'}}>&nbsp;Waiting for download...</span> :
-              null
-          }
-
           <div className="filter-trigger">
             <button
               onClick={this.openFilters}>
@@ -426,34 +460,6 @@ class Grid extends Component {
             left: '0',
             width: '100%'
             }}>
-            { !_.isEmpty( this.state.filters ) ?
-                <div>
-                  Meets criteria:
-                  <ul>
-                    {
-                      Object.keys( this.state.filters ).map( (filterName, i) => {
-                        const isLastItem = i + 1 === _.size( this.state.filters );
-                        const filter = this.state.filters[ filterName ];
-                        let string = filter.join(' OR ');
-                        if ( !isLastItem ) {
-                          string += ' AND'
-                        }
-                        return (
-                          <li key={ i }>{ string }</li>
-                        )
-                      })
-                    }
-                  </ul>
-                  <button
-                    onClick={this.onClearFilters}>
-                    Clear Filters
-                  </button>
-                </div>
-                :
-                null
-            }
-
-            <GeoSuggest dataset="laus" />
             <ReactDataGrid
               columns={this._columns}
               rowGetter={this.rowGetter}

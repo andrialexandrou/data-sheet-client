@@ -10,7 +10,8 @@ class GeoSuggest extends Component {
 
     this.state = {
       value: "",
-      suggestions: []
+      suggestions: [],
+      selections: []
     }
   }
 
@@ -50,6 +51,34 @@ class GeoSuggest extends Component {
     return <div>{ suggestion }</div>
   }
 
+  renderSelections = ( selections ) => {
+    var count = 0;
+    return (
+      <div>
+      {
+        selections.map( sel => {
+          count++;
+          return <div key={count}>{ sel }</div>;
+        })
+      }
+      </div>
+    );
+  }
+
+  onKeyDown = (event) => {
+    const isEnter = event.which === 13;
+    const isBackspace = event.which === 8;
+
+    if ( isEnter ) {
+      const selection = this.state.value;
+      this.props.add({text: selection, id: selection}, 'area');
+      this.setState({value: ''});
+    }
+    if ( isBackspace ) {
+      this.props.remove('last', 'area');
+    }
+  }
+
   onChange = (event, { newValue }) => {
     if (event.type === 'change' ) {
       this.setState({
@@ -86,20 +115,23 @@ class GeoSuggest extends Component {
     const inputProps = {
       value: this.state.value,
       onChange: this.onChange,
+      onKeyDown: this.onKeyDown,
       onBlur: () => {},
       type: 'search',
       placeholder: 'location'
     };
 
     return (
-      <Autosuggest
-        suggestions={ suggestions }
-        onSuggestionsFetchRequested={ this.onFetch }
-        onSuggestionsClearRequested={ this.onClear }
-        getSuggestionValue={ this.getFromServer }
-        renderSuggestion={ this.renderSuggestion }
-        inputProps={ inputProps }
-      />
+      <div>
+        { this.renderSelections( this.state.selections ) }
+        <Autosuggest
+          suggestions={ suggestions }
+          onSuggestionsFetchRequested={ this.onFetch }
+          onSuggestionsClearRequested={ this.onClear }
+          getSuggestionValue={ this.getFromServer }
+          renderSuggestion={ this.renderSuggestion }
+          inputProps={ inputProps } />
+      </div>
     );
   }
 }

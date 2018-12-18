@@ -80,3 +80,13 @@ button {
   background-color: var(--subtle-green);
   padding: 20px;
 }
+
+input[type='text'],
+input[type='search'] {
+  padding: 5px;
+  width: 100%;
+}
+
+.hide-input .ReactTags__tagInput {
+  display: none;
+}
