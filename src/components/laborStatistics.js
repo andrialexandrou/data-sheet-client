@@ -306,7 +306,12 @@ class Grid extends Component {
     }
   }
 
-  makeCheckboxes = names => {
+  isChecked = (key, name) => {
+    return this.state.filters[key] &&
+      this.state.filters[key].includes(name);
+  }
+
+  makeCheckboxes = (key, names) => {
     const rows = [];
     let count = 0;
     names.forEach( value => {
@@ -325,6 +330,7 @@ class Grid extends Component {
           <input
             name={ name }
             type="checkbox"
+            checked={this.isChecked( key, name )}
             onChange={this.handleChange} />
             &nbsp;{ name } { supplemental }
         </label>
@@ -426,15 +432,15 @@ class Grid extends Component {
           </section>
           <section>
             <b>Area Types</b>
-            { this.makeCheckboxes( this.areaTypes ) }
+            { this.makeCheckboxes( 'area_type', this.areaTypes ) }
           </section>
           <section>
             <b>Measure Types</b>
-            { this.makeCheckboxes( this.measureTypes ) }
+            { this.makeCheckboxes( 'measure_type', this.measureTypes ) }
           </section>
           <section>
             <b>Seasonality</b>
-            { this.makeCheckboxes( this.seasonalityEnums ) }
+            { this.makeCheckboxes( 'seasonality_enum', this.seasonalityEnums ) }
           </section>
         </form>
       </div>
