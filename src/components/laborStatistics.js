@@ -18,7 +18,7 @@ function buildQueryString( filters ) {
     var filterValue = filter.join('|');
     const thisQuery = `${ filterLabel }=${ filterValue }&`;
     query += thisQuery;
-  })
+  });
   return query;
 }
 
