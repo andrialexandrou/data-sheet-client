@@ -182,7 +182,10 @@ class Grid extends Component {
 
   onClearFilters = () => {
     // all filters removed
-    this.setState({filters: {} }, this.requestFromAPI);
+    this.setState({
+      filters: {},
+      tags: {}
+    }, this.requestFromAPI);
   };
 
   download = () => {
@@ -257,10 +260,14 @@ class Grid extends Component {
 
     this.setState({
       filters: filters
-    }, this.requestFromAPI);
+    });
   }
 
   handleTagDelete = (i, key) => {
+    if ( !this.state.tags.area || this.state.tags.area.length === 0 ) {
+      return;
+    }
+
     if ( i === 'last' && key === 'area' ) {
       i = this.state.tags.area.length - 1;
     }
@@ -277,7 +284,7 @@ class Grid extends Component {
     this.setState({
       filters: filters,
       tags: tags
-    }, this.requestFromAPI);
+    });
   };
 
   handleTagAdd = (tag, category) => {
@@ -287,7 +294,7 @@ class Grid extends Component {
     this.setState({
       filters: filters,
       tags: tags
-    }, this.requestFromAPI);
+    });
   };
 
   DownloadButton = () => {
@@ -370,6 +377,18 @@ class Grid extends Component {
                   })
                 }
               </ul>
+              <div>
+                <button
+                  style={{
+                    width: '100%',
+                    backgroundColor: 'green',
+                    color: 'white',
+                    fontWeight: '800'
+                  }}
+                  onClick={ () => this.requestFromAPI( false )}>
+                  Preview Results
+                </button>
+              </div>
               <button
                 onClick={this.onClearFilters}>
                 Clear Filters
