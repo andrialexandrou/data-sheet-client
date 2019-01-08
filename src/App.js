@@ -9,7 +9,7 @@ class App extends Component {
     super(props, context)
 
     this.state = {
-      grid: 'unemployment'
+      grid: 'labor'
     };
 
     this.handleClick = this.handleClick.bind(this);
