@@ -146,6 +146,7 @@ class Grid extends Component {
       path += query;
     }
     console.log('path', path);
+    if ( isForDownload ) return;
     axios.get( path )
       .then( response => {
         if ( isForDownload ) {
@@ -360,6 +361,58 @@ class Grid extends Component {
     return <div>{ rows }</div>
   }
 
+  FormButtons = () => {
+    return (
+      <div>
+        <div>
+          Meets criteria:
+          <ul>
+            {
+              Object.keys( this.state.filters ).map( (filterName, i) => {
+                const isLastItem = i + 1 === _.size( this.state.filters );
+                const filter = this.state.filters[ filterName ];
+                let string = filter.join(' OR ');
+                if ( !isLastItem ) {
+                  string += ' AND'
+                }
+                return (
+                  <li key={ i }>{ string }</li>
+                )
+              })
+            }
+          </ul>
+          <div className="flex-container">
+            <div className="flex-column">
+              <button
+                style={{
+                  backgroundColor: 'green',
+                  color: 'white',
+                  fontWeight: '800'
+                }}
+                onClick={ () => this.requestFromAPI( false )}>
+                Preview Results
+              </button>
+            </div>
+            <div className="flex-column">
+              <button
+                onClick={this.onClearFilters}>
+                Clear Filters
+              </button>
+            </div>
+            <div className="flex-column">
+              <this.DownloadButton />
+            </div>
+            {
+              this.state.isWaitingForDownload ?
+              <div style={{color: 'green'}}>&nbsp;Waiting for download...</div> :
+              null
+            }
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   FilterForm = () => {
     const KeyCodes = {
       comma: 188, // some of the values include commas. therefore, exclude
@@ -371,106 +424,62 @@ class Grid extends Component {
 
     return (
       <div className="filter-pane">
-        { !_.isEmpty( this.state.filters ) ?
-            <div>
-              Meets criteria:
-              <ul>
-                {
-                  Object.keys( this.state.filters ).map( (filterName, i) => {
-                    const isLastItem = i + 1 === _.size( this.state.filters );
-                    const filter = this.state.filters[ filterName ];
-                    let string = filter.join(' OR ');
-                    if ( !isLastItem ) {
-                      string += ' AND'
-                    }
-                    return (
-                      <li key={ i }>{ string }</li>
-                    )
-                  })
-                }
-              </ul>
-              <div>
-                <button
-                  style={{
-                    width: '100%',
-                    backgroundColor: 'green',
-                    color: 'white',
-                    fontWeight: '800'
-                  }}
-                  onClick={ () => this.requestFromAPI( false )}>
-                  Preview Results
-                </button>
-              </div>
-              <div>
-                <button
-                  onClick={this.onClearFilters}>
-                  Clear Filters
-                </button>
-
-                <this.DownloadButton />
-              </div>
-              {
-                this.state.isWaitingForDownload ?
-                  <span style={{color: 'green'}}>&nbsp;Waiting for download...</span> :
-                  null
-              }
-            </div>
-            :
-            null
-        }
         <form>
           <div className="disclaimer">
             At the moment, text values inserted here must match upper/lowercase and punctuation of the target search field.
           </div>
-          <section>
-            <label>
-              <b>State</b>
-              <div>
-                <ReactTags
-                  tags={this.state.tags.state}
-                  handleDelete={e => this.handleTagDelete(e, 'state')}
-                  handleAddition={e => this.handleTagAdd(e, 'state')}
-                  delimiters={delimiters} />
-              </div>
-            </label>
-          </section>
-          <section>
-            <label>
-              <b>Period</b>
-              <div>
-                <ReactTags
-                  tags={this.state.tags.period}
-                  handleDelete={e => this.handleTagDelete(e, 'period')}
-                  handleAddition={e => this.handleTagAdd(e, 'period')}
-                  delimiters={delimiters} />
-              </div>
-            </label>
-          </section>
-          <section>
-            <label>
-              <b>Label</b>
-              <div>
-                <ReactTags
-                  tags={this.state.tags.label}
-                  handleDelete={e => this.handleTagDelete(e, 'label')}
-                  handleAddition={e => this.handleTagAdd(e, 'label')}
-                  delimiters={delimiters} />
-              </div>
-            </label>
-          </section>
-          <section>
+          <div className="flex-container">
+            <section className="flex-column">
+              <label>
+                <b>State</b>
+                <div>
+                  <ReactTags
+                    tags={this.state.tags.state}
+                    handleDelete={e => this.handleTagDelete(e, 'state')}
+                    handleAddition={e => this.handleTagAdd(e, 'state')}
+                    delimiters={delimiters} />
+                </div>
+              </label>
+            </section>
+            <section className="flex-column">
+              <label>
+                <b>Period</b>
+                <div>
+                  <ReactTags
+                    tags={this.state.tags.period}
+                    handleDelete={e => this.handleTagDelete(e, 'period')}
+                    handleAddition={e => this.handleTagAdd(e, 'period')}
+                    delimiters={delimiters} />
+                </div>
+              </label>
+            </section>
+            <section className="flex-column">
+              <label>
+                <b>Label</b>
+                <div>
+                  <ReactTags
+                    tags={this.state.tags.label}
+                    handleDelete={e => this.handleTagDelete(e, 'label')}
+                    handleAddition={e => this.handleTagAdd(e, 'label')}
+                    delimiters={delimiters} />
+                </div>
+              </label>
+            </section>
+          </div>
+          <div className="flex-container">
+          <section className="flex-column">
             <b>Seasonality</b>
             { this.makeCheckboxes( 'seasonality_enum', this.seasonalityEnums ) }
-          </section>
-          <section>
             <b>Supersectors</b>
             { this.makeCheckboxes( 'supersector', this.supersectors ) }
           </section>
-          <section>
+          <section className="flex-column">
             <b>Industries</b>
             { this.makeCheckboxes( 'industry', this.industries ) }
           </section>
+          </div>
         </form>
+        <this.FormButtons />
       </div>
     );
   }
@@ -479,16 +488,7 @@ class Grid extends Component {
     if ( this._rows ) {
       return  (
         <div>
-          <div className="filter-trigger">
-            <button
-              onClick={this.openFilters}>
-              Apply Filters
-            </button>
-            {
-              this.state.showFilters && <this.FilterForm />
-            }
-          </div>
-
+          <this.FilterForm />
           <div style={{
             position: 'absolute',
             left: '0',

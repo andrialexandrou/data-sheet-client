@@ -33,10 +33,14 @@ class App extends Component {
   render() {
     return (
       <div>
-        <button onClick={() => this.handleClick('labor')}>
+        <button 
+          onClick={() => this.handleClick('labor')}
+          className={ this.state.grid === 'labor' && 'current' } >
           National and Local Labor Force Statistics
         </button>
-        <button onClick={() => this.handleClick('unemployment')}>
+        <button 
+          onClick={() => this.handleClick('unemployment')}
+          className={this.state.grid === 'unemployment' && 'current' } >
           Current Employment
         </button>
         { this.showGrid() }

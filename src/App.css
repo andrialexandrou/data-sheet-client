@@ -22,6 +22,10 @@
   color: #61dafb;
 }
 
+.current {
+  background-color: #ccffff;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
@@ -68,17 +72,19 @@ button {
 }
 
 .filter-pane {
-  position: absolute;
-  top: 0;
-  right: 0;
-  display: block;
   font-size: 1.3em;
   line-height: 1.5em;
-
-  z-index: 100;
-  width: 400px;
   background-color: var(--subtle-green);
   padding: 20px;
+}
+
+.flex-container {
+  display: flex;
+  /* justify-content: space-between; */
+}
+
+.flex-column {
+  padding: 15px;
 }
 
 input[type='text'],
