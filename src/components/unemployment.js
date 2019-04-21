@@ -253,13 +253,15 @@ class Grid extends Component {
   handleChange = event => {
     const { filters } = this.state;
     const target = event.target;
-    const value = target.type === 'checkbox' ? target.checked : target.value;
-    const name = target.name;
+    const hasValue = target.type === 'checkbox' ? target.checked : target.value;
+    let name = target.name;
 
     if ( target.type === "checkbox" ) {
       const key = this.findKey( name );
-
-      if ( value ) {
+      if ( key === "industry_type" ) {
+        name = name.replace(/\d+/g, '' ).trim()
+      }
+      if ( hasValue ) {
         // being checked
         filters[ key ] = _.uniq( ( filters[ key ] || [] ).concat( name ) );
       } else {
