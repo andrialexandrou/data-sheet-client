@@ -475,7 +475,9 @@ class Grid extends Component {
           </section>
           <section className="flex-column">
             <b>Industries</b>
-            { this.makeCheckboxes( 'industry', this.industries ) }
+            <div className="industries-scrollbox">
+              { this.makeCheckboxes( 'industry', this.industries ) }
+            </div>
           </section>
           </div>
         </form>

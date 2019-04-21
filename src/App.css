@@ -1,3 +1,17 @@
+@font-face {
+  font-family: "Cool Font";
+  src: url('assets/fonts/courier_prime_code-webfont.woff') format('woff');
+  unicode-range: U+30-39;
+}
+
+body {
+  font-family: Arial;
+}
+
+.filter-pane {
+  font-family: "Cool Font", Arial;
+}
+
 .App {
   text-align: center;
 }
@@ -95,4 +109,10 @@ input[type='search'] {
 
 .hide-input .ReactTags__tagInput {
   display: none;
+}
+
+.industries-scrollbox {
+  height: 600px;
+  overflow: scroll;
+  outline: 1px dotted green;
 }
