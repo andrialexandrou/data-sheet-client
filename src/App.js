@@ -40,7 +40,7 @@ class App extends Component {
         </button>
         <button 
           onClick={() => this.handleClick('unemployment')}
-          className={this.state.grid === 'unemployment' && 'current' } >
+          className={this.state.grid === 'unemployment' && 'current' || undefined } >
           Current Employment
         </button>
         { this.showGrid() }

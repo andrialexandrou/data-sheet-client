@@ -145,8 +145,6 @@ class Grid extends Component {
     if ( query ) {
       path += query;
     }
-    console.log('path', path);
-    if ( isForDownload ) return;
     axios.get( path )
       .then( response => {
         if ( isForDownload ) {
@@ -404,11 +402,6 @@ class Grid extends Component {
             <div className="flex-column">
               <this.DownloadButton />
             </div>
-            {
-              this.state.isWaitingForDownload ?
-              <div style={{color: 'green'}}>&nbsp;Waiting for download...</div> :
-              null
-            }
           </div>
         </div>
       </div>
@@ -492,6 +485,13 @@ class Grid extends Component {
     if ( this._rows ) {
       return  (
         <div>
+          {
+            this.state.isWaitingForDownload
+              ? <div className="is-downloading">
+                <div>Your file is downloading...</div>
+              </div>
+              : null
+          }
           <this.FilterForm />
           <div style={{
             position: 'absolute',
