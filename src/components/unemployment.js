@@ -96,7 +96,23 @@ class Grid extends Component {
         width: 200
       }
     ];
-
+    this.areaTypes = [
+      'National',
+      'Statewide',
+      'Metropolitan areas',
+      'Metropolitan divisions',
+      'Micropolitan areas',
+      'Combined areas',
+      'Counties and equivalents',
+      'Cities and towns above 25,000 population',
+      'Cities and towns below 25,000 population in New England',
+      'Parts of cities that cross county boundaries',
+      'Multi-entity small labor market areas',
+      'Intrastate parts of interstate areas',
+      'Balance of state areas',
+      'Census regions',
+      'Census divisions'
+    ];
     this.seasonalityEnums = [ {
       key: 'S',
       note: '(seasonally adjusted)'
@@ -237,6 +253,7 @@ class Grid extends Component {
 
     const isSupersector = this.supersectors.find( type => type === value );
     const isSeasonalityType = this.seasonalityEnums.find( type => type.key === value );
+    const isAreaCodeType = this.areaTypes.find( type => type === value );
     const isIndustry = this.industries.find( type => type === value );
     if ( isSupersector ) {
       key = "supersector_type";
@@ -436,6 +453,21 @@ class Grid extends Component {
                 </div>
               </label>
             </section>
+            <label
+              className="flex-column hide-input">
+              <b>Area Code Type</b>
+              <div>
+                <ReactTags
+                  tags={this.state.tags.area}
+                  handleDelete={() => {}}
+                  handleAddition={() => {}}
+                  delimiters={delimiters} />
+                <GeoSuggest
+                  dataset="employ"
+                  add={ this.handleTagAdd }
+                  remove={ this.handleTagDelete }/>
+              </div>
+            </label>
             <section className="flex-column">
               <label>
                 <b>Period</b>
@@ -462,6 +494,10 @@ class Grid extends Component {
             </section>
           </div>
           <div className="flex-container">
+          <section className="flex-column">
+              <b>Area Types</b>
+              { this.makeCheckboxes( 'area_type', this.areaTypes ) }
+            </section>
           <section className="flex-column">
             <b>Seasonality</b>
             { this.makeCheckboxes( 'seasonality_enum', this.seasonalityEnums ) }

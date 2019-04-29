@@ -40,7 +40,7 @@ class GeoSuggest extends Component {
   onFetch = _.debounce( ({ value }) => {
     this.getFromServer( value )
       .then( suggestions => {
-        const flatSuggestions = suggestions.map(obj => obj.area);
+        const flatSuggestions = suggestions.map(obj => obj.area || obj.name);
         this.setState({
           suggestions: flatSuggestions
         })
